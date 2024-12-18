@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using BackendApi.Contracts.User;
+using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,52 +16,124 @@ namespace BackendApi.Controllers
         {
             Context = context;
         }
-
+        /// <summary>
+        /// Получить по идентификатору всех!!!!
+        /// </summary>
+        /// <param name="model">Пользователи</param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetAll()
         {
             List<User> users = Context.Users.ToList();
-            return Ok(users);
+
+            // Преобразование в DTO с использованием Mapster
+            List<GetUserResponse> getUserResponse = users.Adapt<List<GetUserResponse>>();
+
+            return Ok(getUserResponse);
         }
 
+        /// <summary>
+        /// Получить по идентификатору
+        /// </summary>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            User? user = Context.Users.Where(x => x.UserId == id).FirstOrDefault();
+            var user = Context.Users.Where(x => x.UserId == id).FirstOrDefault();
+
             if (user == null)
             {
                 return BadRequest("Not Found");
             }
-            return Ok(user);
+
+            // Автоматическое преобразование в UserDto с помощью Mapster
+            var userDto = user.Adapt<GetUserResponse>();
+
+            return Ok(userDto);
         }
 
+        /// <summary>
+        /// Создание нового пользователя
+        /// </summary>
+        /// <remarks>
+        /// Пример запроса:
+        ///
+        ///     POST /Todo
+        ///     {
+        ///        "login" : "123",
+        ///        "password" : "12345",
+        ///        "firstname" : "Иван",
+        ///        "lastname" : "Иванов",
+        ///        "middlename" : "Иванович"
+        ///     }
+        ///
+        /// </remarks>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
+
+        // POST api/<UserController>
         [HttpPost]
-        public IActionResult Add(User user)
+        public IActionResult Add(CreateUserRequest model)
         {
+            // Маппинг из CreateUserRequest в сущность User
+            var user = model.Adapt<User>();
+
             Context.Users.Add(user);
             Context.SaveChanges();
-            return Ok(user);
+
+            // Маппинг обратно в GetUserResponse, чтобы вернуть только нужные данные
+            var response = user.Adapt<GetUserResponse>();
+
+            return Ok(response);
         }
 
+        /// <summary>
+        /// Обновление данных
+        /// </summary>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
         [HttpPut]
-        public IActionResult Update(User user)
+        public IActionResult Update(int id, CreateUserRequest model)
         {
+            var user = Context.Users.FirstOrDefault(x => x.UserId == id);
+
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            // Обновление данных пользователя из CreateUserRequest
+            model.Adapt(user);
+
             Context.Users.Update(user);
             Context.SaveChanges();
-            return Ok(user);
+
+            // Возвращаем обновлённого пользователя с помощью GetUserResponse
+            var response = user.Adapt<GetUserResponse>();
+
+            return Ok(response);
         }
 
+        /// <summary>
+        /// Удаление пользователя 
+        /// </summary>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
         [HttpDelete]
         public IActionResult Delete(int id)
         {
-            User? user = Context.Users.Where(x => x.UserId == id).FirstOrDefault();
+            var user = Context.Users.FirstOrDefault(x => x.UserId == id);
+
             if (user == null)
             {
-                return BadRequest("Not Found");
+                return BadRequest("User not found");
             }
+
             Context.Users.Remove(user);
             Context.SaveChanges();
-            return Ok();
+
+            return Ok("User successfully deleted");
         }
 
     }

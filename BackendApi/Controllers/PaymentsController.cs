@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using BackendApi.Contracts.Payments;
+using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,65 +17,70 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить список всех платежей.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<Payment> payments = Context.Payments.ToList();
-            return Ok(payments);
+            var payments = Context.Payments.ToList();
+            var response = payments.Adapt<List<GetPaymentsResponse>>();
+            return Ok(response);
         }
 
-        // Получить платеж по payments_id и user_id
+        /// <summary>
+        /// Получить платеж по идентификаторам.
+        /// </summary>
         [HttpGet("{paymentsId}/{userId}")]
         public IActionResult GetById(int paymentsId, int userId)
         {
-            Payment? payment = Context.Payments
-                .Where(x => x.PaymentsId == paymentsId && x.UserId == userId)
-                .FirstOrDefault();
-            if (payment == null)
-            {
-                return BadRequest("Not Found");
-            }
-            return Ok(payment);
+            var payment = Context.Payments
+                .FirstOrDefault(x => x.PaymentsId == paymentsId && x.UserId == userId);
+
+            if (payment == null) return BadRequest("Not Found");
+
+            return Ok(payment.Adapt<GetPaymentsResponse>());
         }
 
-        // Добавить новый платеж
+        /// <summary>
+        /// Добавить новый платеж.
+        /// </summary>
         [HttpPost]
-        public IActionResult Add(Payment payment)
+        public IActionResult Add(CreatePaymentsRequest request)
         {
+            var payment = request.Adapt<Payment>();
             Context.Payments.Add(payment);
             Context.SaveChanges();
-            return Ok(payment);
+            return Ok(payment.Adapt<GetPaymentsResponse>());
         }
 
-        // Обновить платеж
-        [HttpPut]
-        public IActionResult Update(Payment payment)
+        /// <summary>
+        /// Обновить платеж.
+        /// </summary>
+        [HttpPut("{paymentsId}/{userId}")]
+        public IActionResult Update(CreatePaymentsRequest request, int paymentsId, int userId)
         {
             var existingPayment = Context.Payments
-                .Where(x => x.PaymentsId == payment.PaymentsId && x.UserId == payment.UserId)
-                .FirstOrDefault();
-            if (existingPayment == null)
-            {
-                return BadRequest("Not Found");
-            }
+                .FirstOrDefault(x => x.PaymentsId == paymentsId && x.UserId == userId);
 
-            // Обновление значений
-            Context.Entry(existingPayment).CurrentValues.SetValues(payment);
+            if (existingPayment == null) return BadRequest("Not Found");
+
+            request.Adapt(existingPayment);
             Context.SaveChanges();
-            return Ok(payment);
+            return Ok(existingPayment.Adapt<GetPaymentsResponse>());
         }
 
-        // Удалить платеж
+        /// <summary>
+        /// Удалить платеж.
+        /// </summary>
         [HttpDelete("{paymentsId}/{userId}")]
         public IActionResult Delete(int paymentsId, int userId)
         {
-            Payment? payment = Context.Payments
-                .Where(x => x.PaymentsId == paymentsId && x.UserId == userId)
-                .FirstOrDefault();
-            if (payment == null)
-            {
-                return BadRequest("Not Found");
-            }
+            var payment = Context.Payments
+                .FirstOrDefault(x => x.PaymentsId == paymentsId && x.UserId == userId);
+
+            if (payment == null) return BadRequest("Not Found");
+
             Context.Payments.Remove(payment);
             Context.SaveChanges();
             return Ok();

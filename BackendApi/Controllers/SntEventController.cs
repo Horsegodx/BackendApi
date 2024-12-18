@@ -15,6 +15,9 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить все события СНТ.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -22,7 +25,9 @@ namespace BackendApi.Controllers
             return Ok(sntEvents);
         }
 
-        // Получить событие по event_id, snt_id и user_id
+        /// <summary>
+        /// Получить событие по его идентификатору события, СНТ и пользователя.
+        /// </summary>
         [HttpGet("{eventId}/{sntId}/{userId}")]
         public IActionResult GetById(int eventId, int sntId, int userId)
         {
@@ -36,7 +41,9 @@ namespace BackendApi.Controllers
             return Ok(sntEvent);
         }
 
-        // Добавить новое событие
+        /// <summary>
+        /// Добавить новое событие.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(SntEvent sntEvent)
         {
@@ -45,7 +52,9 @@ namespace BackendApi.Controllers
             return Ok(sntEvent);
         }
 
-        // Обновить событие
+        /// <summary>
+        /// Обновить существующее событие.
+        /// </summary>
         [HttpPut]
         public IActionResult Update(SntEvent sntEvent)
         {
@@ -63,7 +72,9 @@ namespace BackendApi.Controllers
             return Ok(sntEvent);
         }
 
-        // Удалить событие
+        /// <summary>
+        /// Удалить событие.
+        /// </summary>
         [HttpDelete("{eventId}/{sntId}/{userId}")]
         public IActionResult Delete(int eventId, int sntId, int userId)
         {

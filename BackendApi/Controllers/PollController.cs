@@ -15,7 +15,9 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
-
+        /// <summary>
+        /// Получить все опросы.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -23,6 +25,9 @@ namespace BackendApi.Controllers
             return Ok(polls);
         }
 
+        /// <summary>
+        /// Получить опрос по его идентификатору.
+        /// </summary>
         [HttpGet("{pollId}")]
         public IActionResult GetById(int pollId)
         {
@@ -36,6 +41,9 @@ namespace BackendApi.Controllers
             return Ok(poll);
         }
 
+        /// <summary>
+        /// Добавить новый опрос.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(Poll poll)
         {
@@ -44,6 +52,9 @@ namespace BackendApi.Controllers
             return Ok(poll);
         }
 
+        /// <summary>
+        /// Обновить существующий опрос.
+        /// </summary>
         [HttpPut]
         public IActionResult Update(Poll poll)
         {
@@ -61,6 +72,9 @@ namespace BackendApi.Controllers
             return Ok(poll);
         }
 
+        /// <summary>
+        /// Удалить опрос.
+        /// </summary>
         [HttpDelete("{pollId}")]
         public IActionResult Delete(int pollId)
         {

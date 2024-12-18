@@ -15,6 +15,9 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить все СНТ.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -22,7 +25,9 @@ namespace BackendApi.Controllers
             return Ok(snts);
         }
 
-        // Получить СНТ по snt_id и user_id
+        /// <summary>
+        /// Получить СНТ по его идентификатору и идентификатору пользователя.
+        /// </summary>
         [HttpGet("{sntId}/{userId}")]
         public IActionResult GetById(int sntId, int userId)
         {
@@ -36,7 +41,9 @@ namespace BackendApi.Controllers
             return Ok(snt);
         }
 
-        // Добавить новое СНТ
+        /// <summary>
+        /// Добавить новое СНТ.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(Snt snt)
         {
@@ -45,7 +52,9 @@ namespace BackendApi.Controllers
             return Ok(snt);
         }
 
-        // Обновить СНТ
+        /// <summary>
+        /// Обновить существующее СНТ.
+        /// </summary>
         [HttpPut]
         public IActionResult Update(Snt snt)
         {
@@ -63,7 +72,9 @@ namespace BackendApi.Controllers
             return Ok(snt);
         }
 
-        // Удалить СНТ
+        /// <summary>
+        /// Удалить СНТ.
+        /// </summary>
         [HttpDelete("{sntId}/{userId}")]
         public IActionResult Delete(int sntId, int userId)
         {

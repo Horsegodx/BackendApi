@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using BackendApi.Contracts.News;
+using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,65 +17,70 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить список всех новостей.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<News> newsList = Context.News.ToList();
-            return Ok(newsList);
+            var newsList = Context.News.ToList();
+            var response = newsList.Adapt<List<GetNewsResponse>>();
+            return Ok(response);
         }
 
-        // Получить новость по ID и user_id
+        /// <summary>
+        /// Получить новость по идентификаторам.
+        /// </summary>
         [HttpGet("{newsId}/{userId}")]
         public IActionResult GetById(int newsId, int userId)
         {
-            News? news = Context.News
-                .Where(x => x.NewsId == newsId && x.UserId == userId)
-                .FirstOrDefault();
-            if (news == null)
-            {
-                return BadRequest("Not Found");
-            }
-            return Ok(news);
+            var news = Context.News
+                .FirstOrDefault(x => x.NewsId == newsId && x.UserId == userId);
+
+            if (news == null) return BadRequest("Not Found");
+
+            return Ok(news.Adapt<GetNewsResponse>());
         }
 
-        // Добавить новость
+        /// <summary>
+        /// Добавить новость.
+        /// </summary>
         [HttpPost]
-        public IActionResult Add(News news)
+        public IActionResult Add(CreateNewsRequest request)
         {
+            var news = request.Adapt<News>();
             Context.News.Add(news);
             Context.SaveChanges();
-            return Ok(news);
+            return Ok(news.Adapt<GetNewsResponse>());
         }
 
-        // Обновить новость
-        [HttpPut]
-        public IActionResult Update(News news)
+        /// <summary>
+        /// Обновить новость.
+        /// </summary>
+        [HttpPut("{newsId}/{userId}")]
+        public IActionResult Update(CreateNewsRequest request, int newsId, int userId)
         {
             var existingNews = Context.News
-                .Where(x => x.NewsId == news.NewsId && x.UserId == news.UserId)
-                .FirstOrDefault();
-            if (existingNews == null)
-            {
-                return BadRequest("Not Found");
-            }
+                .FirstOrDefault(x => x.NewsId == newsId && x.UserId == userId);
 
-            // Обновление значений
-            Context.Entry(existingNews).CurrentValues.SetValues(news);
+            if (existingNews == null) return BadRequest("Not Found");
+
+            request.Adapt(existingNews);
             Context.SaveChanges();
-            return Ok(news);
+            return Ok(existingNews.Adapt<GetNewsResponse>());
         }
 
-        // Удалить новость
+        /// <summary>
+        /// Удалить новость.
+        /// </summary>
         [HttpDelete("{newsId}/{userId}")]
         public IActionResult Delete(int newsId, int userId)
         {
-            News? news = Context.News
-                .Where(x => x.NewsId == newsId && x.UserId == userId)
-                .FirstOrDefault();
-            if (news == null)
-            {
-                return BadRequest("Not Found");
-            }
+            var news = Context.News
+                .FirstOrDefault(x => x.NewsId == newsId && x.UserId == userId);
+
+            if (news == null) return BadRequest("Not Found");
+
             Context.News.Remove(news);
             Context.SaveChanges();
             return Ok();

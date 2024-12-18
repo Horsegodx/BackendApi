@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using BackendApi.Contracts.Plant;
+using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,52 +17,82 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить список всех растений.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<Plant> plants = Context.Plants.ToList();
-            return Ok(plants);
+            var plants = Context.Plants.ToList();
+            var response = plants.Adapt<List<GetPlantResponse>>();
+            return Ok(response);
         }
 
+        /// <summary>
+        /// Получить растение по идентификатору.
+        /// </summary>
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            Plant? plant = Context.Plants.Where(x => x.PlantId == id).FirstOrDefault();
+            var plant = Context.Plants
+                .FirstOrDefault(x => x.PlantId == id);
+
             if (plant == null)
             {
                 return BadRequest("Not Found");
             }
-            return Ok(plant);
+
+            return Ok(plant.Adapt<GetPlantResponse>());
         }
 
+        /// <summary>
+        /// Добавить новое растение.
+        /// </summary>
         [HttpPost]
-        public IActionResult Add(Plant plant)
+        public IActionResult Add(CreatePlantRequest request)
         {
+            var plant = request.Adapt<Plant>();
             Context.Plants.Add(plant);
             Context.SaveChanges();
-            return Ok(plant);
+            return Ok(plant.Adapt<GetPlantResponse>());
         }
 
-        [HttpPut]
-        public IActionResult Update(Plant plant)
+        /// <summary>
+        /// Обновить информацию о растении.
+        /// </summary>
+        [HttpPut("{id}")]
+        public IActionResult Update(CreatePlantRequest request, int id)
         {
-            Context.Plants.Update(plant);
+            var existingPlant = Context.Plants
+                .FirstOrDefault(x => x.PlantId == id);
+
+            if (existingPlant == null)
+            {
+                return BadRequest("Not Found");
+            }
+
+            request.Adapt(existingPlant);
             Context.SaveChanges();
-            return Ok(plant);
+            return Ok(existingPlant.Adapt<GetPlantResponse>());
         }
 
+        /// <summary>
+        /// Удалить растение.
+        /// </summary>
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            Plant? plant = Context.Plants.Where(x => x.PlantId == id).FirstOrDefault();
+            var plant = Context.Plants
+                .FirstOrDefault(x => x.PlantId == id);
+
             if (plant == null)
             {
                 return BadRequest("Not Found");
             }
+
             Context.Plants.Remove(plant);
             Context.SaveChanges();
             return Ok();
         }
-
     }
 }

@@ -15,6 +15,9 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить все варианты ответов на опросы.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -22,6 +25,9 @@ namespace BackendApi.Controllers
             return Ok(options);
         }
 
+        /// <summary>
+        /// Получить вариант ответа на опрос по его идентификатору.
+        /// </summary>
         [HttpGet("{optionId}/{pollId}")]
         public IActionResult GetById(int optionId, int pollId)
         {
@@ -35,6 +41,9 @@ namespace BackendApi.Controllers
             return Ok(option);
         }
 
+        /// <summary>
+        /// Добавить новый вариант ответа на опрос.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(PollOption option)
         {
@@ -43,6 +52,9 @@ namespace BackendApi.Controllers
             return Ok(option);
         }
 
+        /// <summary>
+        /// Обновить существующий вариант ответа на опрос.
+        /// </summary>
         [HttpPut]
         public IActionResult Update(PollOption option)
         {
@@ -60,6 +72,9 @@ namespace BackendApi.Controllers
             return Ok(option);
         }
 
+        /// <summary>
+        /// Удалить вариант ответа на опрос.
+        /// </summary>
         [HttpDelete("{optionId}/{pollId}")]
         public IActionResult Delete(int optionId, int pollId)
         {

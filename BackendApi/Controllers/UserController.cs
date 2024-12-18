@@ -1,5 +1,7 @@
-﻿using Domain.Interfaces;
+﻿using BackendApi.Contracts.User;
+using Domain.Interfaces;
 using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,25 +17,65 @@ namespace BackendApi.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Получить по идентификатору всех!!!!
+        /// </summary>
+        /// <param name="model">Пользователи</param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            return Ok(await _userService.GetAll());
+            var result = await _userService.GetAll();
+            var response = result.Adapt<List<GetUserResponse>>();
+            return Ok(response);
         }
 
+        /// <summary>
+        /// Получить по идентификатору
+        /// </summary>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            return Ok(await _userService.GetById(id));
+            var result = await _userService.GetById(id);
+            var response = result.Adapt<GetUserResponse>();
+            return Ok(response);
         }
 
+        /// <summary>
+        /// Создание нового пользователя
+        /// </summary>
+        /// <remarks>
+        /// Пример запроса:
+        ///
+        ///     POST /Todo
+        ///     {
+        ///        "login" : "123",
+        ///        "password" : "12345",
+        ///        "firstname" : "Иван",
+        ///        "lastname" : "Иванов",
+        ///        "middlename" : "Иванович"
+        ///     }
+        ///
+        /// </remarks>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
+
+        // POST api/<UserController>
         [HttpPost]
-        public async Task<IActionResult> Add(User user)
+        public async Task<IActionResult> Add(CreateUserRequest request)
         {
-            await _userService.Create(user);
+            var userDuo = request.Adapt<User>();
+            await _userService.Create(userDuo);
             return Ok();
         }
 
+        /// <summary>
+        /// Обновление данных
+        /// </summary>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
         [HttpPut]
         public async Task<IActionResult> Update(User user)
         {
@@ -41,6 +83,11 @@ namespace BackendApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Удаление пользователя 
+        /// </summary>
+        /// <param name="model">Пользователь</param>
+        /// <returns></returns>
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {

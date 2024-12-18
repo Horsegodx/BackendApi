@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using BackendApi.Contracts.Message;
+using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,65 +17,70 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить список всех сообщений.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<Message> messages = Context.Messages.ToList();
-            return Ok(messages);
+            var messages = Context.Messages.ToList();
+            var response = messages.Adapt<List<GetMessageResponse>>();
+            return Ok(response);
         }
 
-        // Получить сообщение по message_id и user_id
+        /// <summary>
+        /// Получить сообщение по идентификаторам.
+        /// </summary>
         [HttpGet("{messageId}/{userId}")]
         public IActionResult GetById(int messageId, int userId)
         {
-            Message? message = Context.Messages
-                .Where(x => x.MessageId == messageId && x.UserId == userId)
-                .FirstOrDefault();
-            if (message == null)
-            {
-                return BadRequest("Not Found");
-            }
-            return Ok(message);
+            var message = Context.Messages
+                .FirstOrDefault(x => x.MessageId == messageId && x.UserId == userId);
+
+            if (message == null) return BadRequest("Not Found");
+
+            return Ok(message.Adapt<GetMessageResponse>());
         }
 
-        // Добавить новое сообщение
+        /// <summary>
+        /// Добавить новое сообщение.
+        /// </summary>
         [HttpPost]
-        public IActionResult Add(Message message)
+        public IActionResult Add(CreateMessageRequest request)
         {
+            var message = request.Adapt<Message>();
             Context.Messages.Add(message);
             Context.SaveChanges();
-            return Ok(message);
+            return Ok(message.Adapt<GetMessageResponse>());
         }
 
-        // Обновить сообщение
-        [HttpPut]
-        public IActionResult Update(Message message)
+        /// <summary>
+        /// Обновить сообщение.
+        /// </summary>
+        [HttpPut("{messageId}/{userId}")]
+        public IActionResult Update(CreateMessageRequest request, int messageId, int userId)
         {
             var existingMessage = Context.Messages
-                .Where(x => x.MessageId == message.MessageId && x.UserId == message.UserId)
-                .FirstOrDefault();
-            if (existingMessage == null)
-            {
-                return BadRequest("Not Found");
-            }
+                .FirstOrDefault(x => x.MessageId == messageId && x.UserId == userId);
 
-            // Обновление значений
-            Context.Entry(existingMessage).CurrentValues.SetValues(message);
+            if (existingMessage == null) return BadRequest("Not Found");
+
+            request.Adapt(existingMessage);
             Context.SaveChanges();
-            return Ok(message);
+            return Ok(existingMessage.Adapt<GetMessageResponse>());
         }
 
-        // Удалить сообщение
+        /// <summary>
+        /// Удалить сообщение.
+        /// </summary>
         [HttpDelete("{messageId}/{userId}")]
         public IActionResult Delete(int messageId, int userId)
         {
-            Message? message = Context.Messages
-                .Where(x => x.MessageId == messageId && x.UserId == userId)
-                .FirstOrDefault();
-            if (message == null)
-            {
-                return BadRequest("Not Found");
-            }
+            var message = Context.Messages
+                .FirstOrDefault(x => x.MessageId == messageId && x.UserId == userId);
+
+            if (message == null) return BadRequest("Not Found");
+
             Context.Messages.Remove(message);
             Context.SaveChanges();
             return Ok();

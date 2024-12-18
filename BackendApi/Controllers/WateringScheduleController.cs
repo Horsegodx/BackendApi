@@ -15,6 +15,9 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить все расписания полива.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -22,6 +25,9 @@ namespace BackendApi.Controllers
             return Ok(schedules);
         }
 
+        /// <summary>
+        /// Получить расписание полива по идентификатору расписания полива и идентификатору растения.
+        /// </summary>
         [HttpGet("{wateringScheduleId}/{plantId}")]
         public IActionResult GetById(int wateringScheduleId, int plantId)
         {
@@ -35,6 +41,9 @@ namespace BackendApi.Controllers
             return Ok(schedule);
         }
 
+        /// <summary>
+        /// Добавить новое расписание полива.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(WateringSchedule schedule)
         {
@@ -43,6 +52,9 @@ namespace BackendApi.Controllers
             return Ok(schedule);
         }
 
+        /// <summary>
+        /// Обновить существующее расписание полива.
+        /// </summary>
         [HttpPut]
         public IActionResult Update(WateringSchedule schedule)
         {
@@ -60,6 +72,9 @@ namespace BackendApi.Controllers
             return Ok(schedule);
         }
 
+        /// <summary>
+        /// Удалить расписание полива.
+        /// </summary>
         [HttpDelete("{wateringScheduleId}/{plantId}")]
         public IActionResult Delete(int wateringScheduleId, int plantId)
         {

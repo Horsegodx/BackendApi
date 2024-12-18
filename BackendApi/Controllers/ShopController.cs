@@ -15,6 +15,9 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить все магазины.
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -22,7 +25,9 @@ namespace BackendApi.Controllers
             return Ok(shops);
         }
 
-        // Получить магазин по shop_id
+        /// <summary>
+        /// Получить магазин по его идентификатору.
+        /// </summary>
         [HttpGet("{shopId}")]
         public IActionResult GetById(int shopId)
         {
@@ -36,7 +41,9 @@ namespace BackendApi.Controllers
             return Ok(shop);
         }
 
-        // Добавить новый магазин
+        /// <summary>
+        /// Добавить новый магазин.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(Shop shop)
         {
@@ -45,7 +52,9 @@ namespace BackendApi.Controllers
             return Ok(shop);
         }
 
-        // Обновить магазин
+        /// <summary>
+        /// Обновить информацию о магазине.
+        /// </summary>
         [HttpPut]
         public IActionResult Update(Shop shop)
         {
@@ -63,7 +72,9 @@ namespace BackendApi.Controllers
             return Ok(shop);
         }
 
-        // Удалить магазин
+        /// <summary>
+        /// Удалить магазин.
+        /// </summary>
         [HttpDelete("{shopId}")]
         public IActionResult Delete(int shopId)
         {

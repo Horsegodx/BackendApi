@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using BackendApi.Contracts.FeedingSchedule;
+using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,65 +17,96 @@ namespace BackendApi.Controllers
             Context = context;
         }
 
+        /// <summary>
+        /// Получить список всех расписаний кормления.
+        /// </summary>
+        /// <returns>Список расписаний в формате GetFeedingScheduleResponse.</returns>
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<FeedingSchedule> feedingSchedules = Context.FeedingSchedules.ToList();
-            return Ok(feedingSchedules);
+            var feedingSchedules = Context.FeedingSchedules.ToList();
+            var response = feedingSchedules.Adapt<List<GetFeedingScheduleResponse>>();
+            return Ok(response);
         }
 
-        // Получить расписание кормления по feeding_id и animals_id
+        /// <summary>
+        /// Получить расписание кормления по идентификатору.
+        /// </summary>
+        /// <param name="feedingId">Идентификатор кормления.</param>
+        /// <param name="animalsId">Идентификатор животного.</param>
+        /// <returns>Расписание в формате GetFeedingScheduleResponse или ошибка 400, если не найдено.</returns>
         [HttpGet("{feedingId}/{animalsId}")]
         public IActionResult GetById(int feedingId, int animalsId)
         {
-            FeedingSchedule? feedingSchedule = Context.FeedingSchedules
+            var feedingSchedule = Context.FeedingSchedules
                 .Where(x => x.FeedingId == feedingId && x.AnimalsId == animalsId)
                 .FirstOrDefault();
+
             if (feedingSchedule == null)
             {
                 return BadRequest("Not Found");
             }
-            return Ok(feedingSchedule);
+
+            var response = feedingSchedule.Adapt<GetFeedingScheduleResponse>();
+            return Ok(response);
         }
 
-        // Добавить новое расписание кормления
+        /// <summary>
+        /// Добавить новое расписание кормления.
+        /// </summary>
+        /// <param name="request">Данные для создания расписания в формате CreateFeedingScheduleRequest.</param>
+        /// <returns>Созданное расписание в формате GetFeedingScheduleResponse.</returns>
         [HttpPost]
-        public IActionResult Add(FeedingSchedule feedingSchedule)
+        public IActionResult Add(CreateFeedingScheduleRequest request)
         {
+            var feedingSchedule = request.Adapt<FeedingSchedule>();
             Context.FeedingSchedules.Add(feedingSchedule);
             Context.SaveChanges();
-            return Ok(feedingSchedule);
+            return Ok(feedingSchedule.Adapt<GetFeedingScheduleResponse>());
         }
 
-        // Обновить расписание кормления
-        [HttpPut]
-        public IActionResult Update(FeedingSchedule feedingSchedule)
+        /// <summary>
+        /// Обновить расписание кормления.
+        /// </summary>
+        /// <param name="request">Данные для обновления расписания в формате CreateFeedingScheduleRequest.</param>
+        /// <param name="feedingId">Идентификатор кормления.</param>
+        /// <param name="animalsId">Идентификатор животного.</param>
+        /// <returns>Обновленное расписание в формате GetFeedingScheduleResponse или ошибка 400, если не найдено.</returns>
+        [HttpPut("{feedingId}/{animalsId}")]
+        public IActionResult Update(CreateFeedingScheduleRequest request, int feedingId, int animalsId)
         {
             var existingFeedingSchedule = Context.FeedingSchedules
-                .Where(x => x.FeedingId == feedingSchedule.FeedingId && x.AnimalsId == feedingSchedule.AnimalsId)
+                .Where(x => x.FeedingId == feedingId && x.AnimalsId == animalsId)
                 .FirstOrDefault();
+
             if (existingFeedingSchedule == null)
             {
                 return BadRequest("Not Found");
             }
 
-            // Обновление значений
-            Context.Entry(existingFeedingSchedule).CurrentValues.SetValues(feedingSchedule);
+            request.Adapt(existingFeedingSchedule);
             Context.SaveChanges();
-            return Ok(feedingSchedule);
+            return Ok(existingFeedingSchedule.Adapt<GetFeedingScheduleResponse>());
         }
 
-        // Удалить расписание кормления
+        /// <summary>
+        /// Удалить расписание кормления.
+        /// </summary>
+        /// <param name="feedingId">Идентификатор кормления.</param>
+        /// <param name="animalsId">Идентификатор животного.</param>
+        /// <returns>Сообщение об успешном удалении или ошибка 400, если не найдено.</returns>
         [HttpDelete("{feedingId}/{animalsId}")]
         public IActionResult Delete(int feedingId, int animalsId)
         {
-            FeedingSchedule? feedingSchedule = Context.FeedingSchedules
+            var feedingSchedule = Context.FeedingSchedules
                 .Where(x => x.FeedingId == feedingId && x.AnimalsId == animalsId)
                 .FirstOrDefault();
+
             if (feedingSchedule == null)
             {
                 return BadRequest("Not Found");
             }
+
             Context.FeedingSchedules.Remove(feedingSchedule);
             Context.SaveChanges();
             return Ok();

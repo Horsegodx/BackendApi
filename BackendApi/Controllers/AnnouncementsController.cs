@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using BackendApi.Contracts.Announcement;
+using Domain.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,66 +16,96 @@ namespace BackendApi.Controllers
         {
             Context = context;
         }
-
+        /// <summary>
+        /// Получить список всех объявлений.
+        /// </summary>
+        /// <returns>Список объявлений в формате GetAnnouncementsResponse.</returns>
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<Announcement> announcements = Context.Announcements.ToList();
-            return Ok(announcements);
+            var announcements = Context.Announcements.ToList();
+            var response = announcements.Adapt<List<GetAnnouncementsResponse>>();
+            return Ok(response);
         }
 
-        // Получить объявление по announcements_id и user_id
+        /// <summary>
+        /// Получить объявление по идентификатору и идентификатору пользователя.
+        /// </summary>
+        /// <param name="announcementsId">Идентификатор объявления.</param>
+        /// <param name="userId">Идентификатор пользователя.</param>
+        /// <returns>Объявление в формате GetAnnouncementsResponse или ошибка 400, если не найдено.</returns>
         [HttpGet("{announcementsId}/{userId}")]
         public IActionResult GetById(int announcementsId, int userId)
         {
-            Announcement? announcement = Context.Announcements
+            var announcement = Context.Announcements
                 .Where(x => x.AnnouncementsId == announcementsId && x.UserId == userId)
                 .FirstOrDefault();
+
             if (announcement == null)
             {
                 return BadRequest("Not Found");
             }
-            return Ok(announcement);
+
+            var response = announcement.Adapt<GetAnnouncementsResponse>();
+            return Ok(response);
         }
 
-        // Добавить новое объявление
+        /// <summary>
+        /// Добавить новое объявление.
+        /// </summary>
+        /// <param name="request">Данные для создания объявления в формате CreateAnnouncementsRequest.</param>
+        /// <returns>Созданное объявление в формате GetAnnouncementsResponse.</returns>
         [HttpPost]
-        public IActionResult Add(Announcement announcement)
+        public IActionResult Add(CreateAnnouncementsRequest request)
         {
+            var announcement = request.Adapt<Announcement>();
             Context.Announcements.Add(announcement);
             Context.SaveChanges();
-            return Ok(announcement);
+            return Ok(announcement.Adapt<GetAnnouncementsResponse>());
         }
 
-        // Обновить объявление
+        /// <summary>
+        /// Обновить существующее объявление.
+        /// </summary>
+        /// <param name="request">Данные для обновления объявления в формате CreateAnnouncementsRequest.</param>
+        /// <param name="announcementsId">Идентификатор объявления.</param>
+        /// <param name="userId">Идентификатор пользователя.</param>
+        /// <returns>Обновленное объявление в формате GetAnnouncementsResponse или ошибка 400, если не найдено.</returns>
         [HttpPut]
-        public IActionResult Update(Announcement announcement)
+        public IActionResult Update(CreateAnnouncementsRequest request, int announcementsId, int userId)
         {
             var existingAnnouncement = Context.Announcements
-                .Where(x => x.AnnouncementsId == announcement.AnnouncementsId && x.UserId == announcement.UserId)
+                .Where(x => x.AnnouncementsId == announcementsId && x.UserId == userId)
                 .FirstOrDefault();
+
             if (existingAnnouncement == null)
             {
                 return BadRequest("Not Found");
             }
 
-            // Обновление значений
-            Context.Entry(existingAnnouncement).CurrentValues.SetValues(announcement);
+            request.Adapt(existingAnnouncement);
             Context.SaveChanges();
-            return Ok(announcement);
+            return Ok(existingAnnouncement.Adapt<GetAnnouncementsResponse>());
         }
 
-        // Удалить объявление
+        /// <summary>
+        /// Удалить объявление.
+        /// </summary>
+        /// <param name="announcementsId">Идентификатор объявления.</param>
+        /// <param name="userId">Идентификатор пользователя.</param>
+        /// <returns>Сообщение об успешном удалении или ошибка 400, если не найдено.</returns>
         [HttpDelete("{announcementsId}/{userId}")]
         public IActionResult Delete(int announcementsId, int userId)
         {
-            Announcement? announcement = Context.Announcements
+            var announcement = Context.Announcements
                 .Where(x => x.AnnouncementsId == announcementsId && x.UserId == userId)
                 .FirstOrDefault();
+
             if (announcement == null)
             {
                 return BadRequest("Not Found");
             }
+
             Context.Announcements.Remove(announcement);
             Context.SaveChanges();
             return Ok();
